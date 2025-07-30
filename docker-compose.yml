@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  migrate:
+    image: laravel11-app
+    container_name: laravel11-migrate
+    volumes:
+      - .:/var/www
+    depends_on:
+      - app
+    entrypoint: ["php", "artisan", "migrate"]
+
+  queue-worker:
+    image: laravel11-app
+    container_name: laravel11-queue-worker
+    restart: unless-stopped
+    volumes:
+      - .:/var/www
+    depends_on:
+      - app
+    command: php artisan queue:work
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: laravel11-app
+    container_name: laravel11-app
+    restart: unless-stopped
+    volumes:
+      - .:/var/www
+    environment:
+      - DB_CONNECTION=${DB_CONNECTION}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SCOUT_DRIVER=database # or meilisearch
+      # Uncomment below to use MeiliSearch
+      #- MEILISEARCH_HOST=http://meilisearch:7700
+
+    ports:
+      - "8000:8000"
+      - "9000:9000"
+
+
