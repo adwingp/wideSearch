@@ -155,12 +155,11 @@ class SearchController extends Controller
      */
     public function logs(Request $request)
     {
+        $perPage = $request->input('per_page', 30);
+        $page = $request->input('page', 1);
         $service = app(\App\Services\SearchService::class);
-        $result = $service->logs();
+        $result = $service->logs($perPage, $page);
         return response()->json($result);
-    
-        // Optional: implement search logs endpoint
-        return response()->json(['logs' => []]);
     }
 
     /**
