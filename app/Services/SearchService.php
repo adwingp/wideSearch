@@ -12,6 +12,13 @@ class SearchService
 {
     public function unifiedSearch(string $query, int $perPage = 10, int $page = 1): array
     {
+        // Log the search query to SearchLog
+        \App\Models\SearchLog::create([
+            'query' => $query,
+            'ip_address' => request()?->ip() ?? null,
+            'created_at' => now(),
+        ]);
+
         $results = collect();
 
         // Blog Posts
@@ -85,19 +92,48 @@ class SearchService
 
     public function suggestions(string $query): array
     {
-        // Implement typeahead logic if needed
-        return ['suggestions' => []];
+        // Aggregate suggestions from all models except User
+        if (!$query) {
+            return ['suggestions' => []];
+        }
+        $suggestions = [];
+        // BlogPost titles
+        $blogPosts = \App\Models\BlogPost::where('title', 'like', "%$query%")
+            ->limit(10)->pluck('title')->toArray();
+        $suggestions = array_merge($suggestions, $blogPosts);
+        // Product names
+        $products = \App\Models\Product::where('name', 'like', "%$query%")
+            ->limit(10)->pluck('name')->toArray();
+        $suggestions = array_merge($suggestions, $products);
+        // Page titles
+        $pages = \App\Models\Page::where('title', 'like', "%$query%")
+            ->limit(10)->pluck('title')->toArray();
+        $suggestions = array_merge($suggestions, $pages);
+        // FAQ questions
+        $faqs = \App\Models\FAQ::where('question', 'like', "%$query%")
+            ->limit(10)->pluck('question')->toArray();
+        $suggestions = array_merge($suggestions, $faqs);
+        // Remove duplicates and limit to 20
+        $suggestions = array_values(array_unique($suggestions));
+        return ['suggestions' => array_slice($suggestions, 0, 20)];
     }
 
     public function logs(): array
     {
-        // Implement logs logic if needed
-        return ['logs' => []];
+        // Fetch latest search logs from SearchLog table
+        $logs = \App\Models\SearchLog::orderByDesc('created_at')->limit(30)->get(['query', 'ip_address', 'created_at']);
+        return ['logs' => $logs];
     }
 
     public function reindex(): array
     {
-        // Implement reindex logic if needed
-        return ['message' => 'Reindex triggered'];
+        // Reindex all searchable models
+        \App\Models\BlogPost::makeAllSearchable();
+        \App\Models\Product::makeAllSearchable();
+        \App\Models\Page::makeAllSearchable();
+        \App\Models\FAQ::makeAllSearchable();
+        return [
+            'message' => 'Reindex triggered for BlogPost, Product, Page, and FAQ.'
+        ];
     }
 }

@@ -15,6 +15,10 @@ class SearchController extends Controller
 {
     /**
      * Recursively convert all array keys to camelCase.
+     * Used to format API responses to camelCase keys.
+     *
+     * @param array $array
+     * @return array
      */
     private function arrayKeysToCamelCase($array)
     {
@@ -29,6 +33,14 @@ class SearchController extends Controller
         return $converted;
     }
 
+    /**
+     * Unified search endpoint for BlogPost, Product, Page, and FAQ models.
+     * Returns paginated, sorted results for a query string.
+     * GET /search?q=term
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function search(Request $request)
     {
         $query = $request->input('q');
@@ -116,6 +128,13 @@ class SearchController extends Controller
         ]));
     }
 
+    /**
+     * Return typeahead suggestions for search queries from BlogPost, Product, Page, and FAQ models.
+     * GET /search/suggestions?q=term
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function suggestions(Request $request)
     {
         $query = $request->input('q');
@@ -127,6 +146,13 @@ class SearchController extends Controller
         return response()->json(['suggestions' => []]);
     }
 
+    /**
+     * Return the latest search query logs from the search_logs table.
+     * GET /search/logs
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function logs(Request $request)
     {
         $service = app(\App\Services\SearchService::class);
@@ -137,6 +163,13 @@ class SearchController extends Controller
         return response()->json(['logs' => []]);
     }
 
+    /**
+     * Trigger manual reindexing of search data.
+     * POST /search/reindex
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function reindex(Request $request)
     {
         $service = app(\App\Services\SearchService::class);
