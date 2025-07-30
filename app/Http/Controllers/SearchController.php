@@ -36,7 +36,16 @@ class SearchController extends Controller
     /**
      * Unified search endpoint for BlogPost, Product, Page, and FAQ models.
      * Returns paginated, sorted results for a query string.
-     * GET /search?q=term
+     * GET /search?q=term&per_page=10&page=1
+     *
+     * Accepts:
+     *   - q: string (required) - search term
+     *   - per_page: integer (optional) - results per page (default 10)
+     *   - page: integer (optional) - page number (default 1)
+     *
+     * Returns:
+     *   - data: array of search results (blog_post, product, page, faq)
+     *   - meta: object (total, per_page, current_page, query)
      *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -130,7 +139,16 @@ class SearchController extends Controller
 
     /**
      * Return typeahead suggestions for search queries from BlogPost, Product, Page, and FAQ models.
-     * GET /search/suggestions?q=term
+     * GET /search/suggestions?q=term&per_page=20&page=1
+     *
+     * Accepts:
+     *   - q: string (required) - partial search term
+     *   - per_page: integer (optional) - suggestions per page (default 20)
+     *   - page: integer (optional) - page number (default 1)
+     *
+     * Returns:
+     *   - suggestions: array of suggestion strings
+     *   - meta: object (total, per_page, current_page, query)
      *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -148,7 +166,15 @@ class SearchController extends Controller
 
     /**
      * Return the latest search query logs from the search_logs table.
-     * GET /search/logs
+     * GET /search/logs?per_page=30&page=1
+     *
+     * Accepts:
+     *   - per_page: integer (optional) - logs per page (default 30)
+     *   - page: integer (optional) - page number (default 1)
+     *
+     * Returns:
+     *   - logs: array of log entries (query, ip_address, created_at)
+     *   - meta: object (total, per_page, current_page)
      *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
